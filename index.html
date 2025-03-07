@@ -11,12 +11,21 @@
         margin: 0 auto;
         padding: 20px;
         background-color: #f5f5f5;
-        background-image: url("images/mobile-430x932-1.png");
+        background-image: url("images/bg-image-newport.png"); /* Default desktop background */
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat; /* Prevents background from repeating */
         background-attachment: fixed; /* Keeps background fixed when scrolling */
       }
+
+      @media (max-width: 768px) {
+        body {
+          background-image: url("images/mobile-430x932-1.png"); /* Mobile background */
+          background-size: cover;
+          background-position: center;
+        }
+      }
+
       .container {
         background-color: white;
         border-radius: 8px;
