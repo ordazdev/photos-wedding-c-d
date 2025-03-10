@@ -437,6 +437,7 @@
           easing: "easeInOutQuad",
           autoplay: false,
         });
+        const uploadArea = document.getElementById("uploadArea");
 
         // Monitor upload progress
         uploadTask.on(
@@ -445,6 +446,10 @@
           (snapshot) => {
             const percentage =
               (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+
+              if(percentage == 100){
+                uploadArea.innerHTML = '<p style="font-size: 20px; font-weight: bold; color: white; background-color: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;">Thank you for sharing!</p>';
+              }
 
             // Update animation progress
             timeline.seek(timeline.duration * (percentage / 100));
