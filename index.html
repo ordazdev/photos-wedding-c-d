@@ -407,8 +407,11 @@
 
       // Upload image to Firebase
       function uploadImage(file) {
-        // Show custom progress container instead of the original progress bar
+        // Hide the original progress bar and status elements completely
         progressBar.style.display = "none";
+        status.textContent = "";
+
+        // Show custom progress container with airplane
         document.getElementById("customProgressContainer").style.display =
           "block";
 
@@ -445,7 +448,7 @@
           },
           // Error
           (error) => {
-            status.textContent = "Upload failed: " + error.message;
+            console.error("Upload failed: " + error.message);
             document.getElementById("customProgressContainer").style.display =
               "none";
           },
@@ -468,33 +471,40 @@
 
             // Reset UI after a short delay to show completion
             setTimeout(() => {
+              // Hide the progress container
               document.getElementById("customProgressContainer").style.display =
                 "none";
 
-              // Change upload area to display thank you message
+              // Make sure we're accessing the upload area correctly
+              const uploadArea = document.getElementById("uploadArea");
+
+              // Change upload area to display thank you message - make sure text is visible against background
               uploadArea.innerHTML =
                 '<p style="font-size: 20px; color: white;">Thank you for sharing!</p>';
+
+              console.log("Thank you message should be displayed now"); // Add this for debugging
 
               // After 3 seconds, reset the upload area to its original state
               setTimeout(() => {
                 uploadArea.innerHTML = `
-                <input
-                  type="file"
-                  id="fileInput"
-                  class="file-input"
-                  accept="image/*"
-                  multiple
-                />
-                <button class="btn">Select Photos</button>
-              `;
+        <input
+          type="file"
+          id="fileInput"
+          class="file-input"
+          accept="image/*"
+          multiple
+        />
+        <button class="btn">Select Photos</button>
+      `;
                 // Re-attach event listener to the new file input element
                 document
                   .getElementById("fileInput")
                   .addEventListener("change", handleFileSelect);
               }, 3000);
 
-              // Clear file input
-              fileInput.value = "";
+              // Clear file input if it still exists
+              const fileInput = document.getElementById("fileInput");
+              if (fileInput) fileInput.value = "";
             }, 500);
           }
         );
@@ -520,82 +530,23 @@
         // Start the animation (it will be controlled by the upload progress)
         timeline.play();
       }
-      // Show progress bar
-      progressBar.style.display = "block";
-      // status.textContent = "Uploading...";
 
-      // Create a unique filename
-      const timestamp = new Date().getTime();
-      const fileName = `${timestamp}_${file.name}`;
+      // In your handleFileSelect function, you should call uploadImage for each file
+      function handleFileSelect(event) {
+        const files = event.target.files;
 
-      // Create storage reference
-      const storageRef = storage.ref(`images/${fileName}`);
-
-      // Start upload
-      const uploadTask = storageRef.put(file);
-
-      // Monitor upload progress
-      uploadTask.on(
-        "state_changed",
-        // Progress
-        (snapshot) => {
-          const percentage =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          progress.style.width = percentage + "%";
-        },
-        // Error
-        (error) => {
-          status.textContent = "Upload failed: " + error.message;
-          progressBar.style.display = "none";
-        },
-        // Complete
-        // This goes in the uploadImage function, in the Complete callback section
-        // Complete
-        async () => {
-          // Get download URL
-          const downloadURL = await storageRef.getDownloadURL();
-
-          // Save to Firestore
-          await saveImageData({
-            name: file.name,
-            url: downloadURL,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            size: file.size,
-            type: file.type,
-          });
-
-          // Reset UI
-          status.textContent = "Upload complete!";
-          progressBar.style.display = "none";
-          progress.style.width = "0%";
-
-          // Change upload area to display thank you message
-          uploadArea.innerHTML =
-            '<p style="font-size: 20px; color: white;">Thank you for sharing!</p>';
-
-          // After 3 seconds, reset the upload area to its original state
-          setTimeout(() => {
-            uploadArea.innerHTML = `
-          <input
-            type="file"
-            id="fileInput"
-            class="file-input"
-            accept="image/*"
-            multiple
-          />
-          <button class="btn">Select Photos</button>
-        `;
-            // Re-attach event listener to the new file input element
-            document
-              .getElementById("fileInput")
-              .addEventListener("change", handleFileSelect);
-          }, 3000);
-
-          // Clear file input
-          fileInput.value = "";
+        if (files.length > 0) {
+          // You can add logic here to handle multiple files if needed
+          for (let i = 0; i < files.length; i++) {
+            uploadImage(files[i]);
+          }
         }
-      );
+      }
 
+      // Make sure to attach the event listener to the file input
+      document
+        .getElementById("fileInput")
+        .addEventListener("change", handleFileSelect);
       // Save image metadata to Firestore
       async function saveImageData(imageData) {
         try {
