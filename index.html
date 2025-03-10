@@ -252,7 +252,33 @@
       <div class="status" id="status"></div>
 
       <div class="gallery" id="gallery"></div>
-
+      <div
+        id="customProgressContainer"
+        style="display: none; width: 100%; position: relative; margin: 20px 0"
+      >
+        <div
+          id="customProgressBar"
+          style="
+            height: 8px;
+            width: 0;
+            background-color: #5361e4;
+            border-radius: 4px;
+          "
+        ></div>
+        <img
+          id="planeIcon"
+          src="images/airplane-icon.png"
+          alt="Plane"
+          style="
+            position: absolute;
+            top: -15px;
+            left: 0;
+            width: 50px;
+            height: 50px;
+            transform: translateX(-50%);
+          "
+        />
+      </div>
       <!-- New link buttons section -->
       <div class="link-buttons">
         <a
@@ -347,9 +373,14 @@
 
       // Upload image to Firebase
       function uploadImage(file) {
-        // Show progress bar
-        progressBar.style.display = "block";
-        // status.textContent = "Uploading...";
+        // Show custom progress container instead of the original progress bar
+        progressBar.style.display = "none";
+        document.getElementById("customProgressContainer").style.display =
+          "block";
+
+        // Reset progress
+        document.getElementById("customProgressBar").style.width = "0%";
+        document.getElementById("planeIcon").style.left = "0px";
 
         // Create a unique filename
         const timestamp = new Date().getTime();
@@ -361,6 +392,12 @@
         // Start upload
         const uploadTask = storageRef.put(file);
 
+        // Animation timeline
+        const timeline = anime.timeline({
+          easing: "easeInOutQuad",
+          autoplay: false,
+        });
+
         // Monitor upload progress
         uploadTask.on(
           "state_changed",
@@ -368,12 +405,15 @@
           (snapshot) => {
             const percentage =
               (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            progress.style.width = percentage + "%";
+
+            // Update animation progress
+            timeline.seek(timeline.duration * (percentage / 100));
           },
           // Error
           (error) => {
             status.textContent = "Upload failed: " + error.message;
-            progressBar.style.display = "none";
+            document.getElementById("customProgressContainer").style.display =
+              "none";
           },
           // Complete
           async () => {
@@ -389,16 +429,138 @@
               type: file.type,
             });
 
-            // Reset UI
-            status.textContent = "Upload complete!";
-            progressBar.style.display = "none";
-            progress.style.width = "0%";
+            // Complete the animation
+            timeline.seek(timeline.duration);
 
-            // Clear file input
-            fileInput.value = "";
+            // Reset UI after a short delay to show completion
+            setTimeout(() => {
+              document.getElementById("customProgressContainer").style.display =
+                "none";
+
+              // Change upload area to display thank you message
+              uploadArea.innerHTML =
+                '<p style="font-size: 20px; color: white;">Thank you for sharing!</p>';
+
+              // After 3 seconds, reset the upload area to its original state
+              setTimeout(() => {
+                uploadArea.innerHTML = `
+                <input
+                  type="file"
+                  id="fileInput"
+                  class="file-input"
+                  accept="image/*"
+                  multiple
+                />
+                <button class="btn">Select Photos</button>
+              `;
+                // Re-attach event listener to the new file input element
+                document
+                  .getElementById("fileInput")
+                  .addEventListener("change", handleFileSelect);
+              }, 3000);
+
+              // Clear file input
+              fileInput.value = "";
+            }, 500);
           }
         );
+
+        // Set up the animation
+        timeline
+          .add({
+            targets: "#customProgressBar",
+            width: "100%",
+            duration: 10000, // This is just a reference duration, actual progress will be controlled by the upload
+            easing: "linear",
+          })
+          .add(
+            {
+              targets: "#planeIcon",
+              left: "100%",
+              duration: 10000, // Same duration as the progress bar
+              easing: "linear",
+            },
+            0
+          ); // Start at the same time as progress bar
+
+        // Start the animation (it will be controlled by the upload progress)
+        timeline.play();
       }
+      // Show progress bar
+      progressBar.style.display = "block";
+      // status.textContent = "Uploading...";
+
+      // Create a unique filename
+      const timestamp = new Date().getTime();
+      const fileName = `${timestamp}_${file.name}`;
+
+      // Create storage reference
+      const storageRef = storage.ref(`images/${fileName}`);
+
+      // Start upload
+      const uploadTask = storageRef.put(file);
+
+      // Monitor upload progress
+      uploadTask.on(
+        "state_changed",
+        // Progress
+        (snapshot) => {
+          const percentage =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          progress.style.width = percentage + "%";
+        },
+        // Error
+        (error) => {
+          status.textContent = "Upload failed: " + error.message;
+          progressBar.style.display = "none";
+        },
+        // Complete
+        // This goes in the uploadImage function, in the Complete callback section
+        // Complete
+        async () => {
+          // Get download URL
+          const downloadURL = await storageRef.getDownloadURL();
+
+          // Save to Firestore
+          await saveImageData({
+            name: file.name,
+            url: downloadURL,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            size: file.size,
+            type: file.type,
+          });
+
+          // Reset UI
+          status.textContent = "Upload complete!";
+          progressBar.style.display = "none";
+          progress.style.width = "0%";
+
+          // Change upload area to display thank you message
+          uploadArea.innerHTML =
+            '<p style="font-size: 20px; color: white;">Thank you for sharing!</p>';
+
+          // After 3 seconds, reset the upload area to its original state
+          setTimeout(() => {
+            uploadArea.innerHTML = `
+          <input
+            type="file"
+            id="fileInput"
+            class="file-input"
+            accept="image/*"
+            multiple
+          />
+          <button class="btn">Select Photos</button>
+        `;
+            // Re-attach event listener to the new file input element
+            document
+              .getElementById("fileInput")
+              .addEventListener("change", handleFileSelect);
+          }, 3000);
+
+          // Clear file input
+          fileInput.value = "";
+        }
+      );
 
       // Save image metadata to Firestore
       async function saveImageData(imageData) {
@@ -481,5 +643,6 @@
         }
       }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   </body>
 </html>
