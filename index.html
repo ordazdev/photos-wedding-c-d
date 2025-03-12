@@ -24,7 +24,7 @@
         margin: 0 auto;
         padding: 20px;
         background-color: #f5f5f5;
-        background-image: url("images/rainbow-bg.png"); /* Default desktop background */
+        background-image: url("images/bg-image-newport.png"); /* Default desktop background */
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat; /* Prevents background from repeating */
@@ -447,9 +447,10 @@
             const percentage =
               (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
 
-              if(percentage == 100){
-                uploadArea.innerHTML = '<p style="font-size: 20px; font-weight: bold; color: white; background-color: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;">Thank you for sharing!</p>';
-              }
+            if (percentage == 100) {
+              uploadArea.innerHTML =
+                '<p style="font-size: 20px; font-weight: bold; color: white; background-color: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;">Thank you for sharing!</p>';
+            }
 
             // Update animation progress
             timeline.seek(timeline.duration * (percentage / 100));
