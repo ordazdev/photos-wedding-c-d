@@ -53,8 +53,9 @@
         width: 15rem;
         text-align: center;
         bottom: 0;
-        left: 5.5rem;
+        left: 5.7rem;
         border-radius: 15px;
+        text-decoration: underline;
       }
       .container {
         background-color: transparent;
@@ -67,7 +68,7 @@
         text-align: center;
       }
       .upload-area {
-        border: 2px dashed white;
+        border: 2px dashed black;
         border-radius: 8px;
         padding: 30px;
         text-align: center;
@@ -176,7 +177,7 @@
         background-color: white;
         color: black;
         padding: 12px 25px;
-        border: none;
+        border: 2px solid black;
         border-radius: 20px;
         cursor: pointer;
         font-size: 1rem;
@@ -194,7 +195,7 @@
       /* Media Queries */
       @media (max-width: 768px) {
         body {
-          background-image: url("images/palmtress-bg.png");
+          background-image: url("images/palmtree-white.png");
         }
 
         h1 {
@@ -286,17 +287,23 @@
           style="
             height: 8px;
             width: 0;
-            background-color: whitesmoke;
+            background: repeating-linear-gradient(
+              to right,
+              skyblue,
+              skyblue 10px,
+              transparent 10px,
+              transparent 15px
+            );
             border-radius: 4px;
           "
         ></div>
         <img
           id="planeIcon"
-          src="images/airplane-icon.png"
+          src="images/plane-6.png"
           alt="Plane"
           style="
             position: absolute;
-            top: -15px;
+            top: -20px;
             left: 0;
             width: 50px;
             height: 50px;
@@ -323,11 +330,7 @@
       style="text-decoration: none; color: inherit; display: block"
     >
       <div class="separate-container">
-        <h1>
-          Courtney & Daniel<br />
-          Wedding<br />
-          March 22, 2025
-        </h1>
+        <h1>Courtney & Daniel March 22, 2025</h1>
       </div>
     </a>
 
@@ -449,7 +452,7 @@
 
             if (percentage == 100) {
               uploadArea.innerHTML =
-                '<p style="font-size: 20px; font-weight: bold; color: white; background-color: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;">Thank you for sharing!</p>';
+                '<p style="font-size: 20px; font-weight: bold; color: white; background-color: black; padding: 10px; border-radius: 8px;">Thank you for sharing!</p>';
             }
 
             // Update animation progress
